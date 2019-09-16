@@ -1,43 +1,60 @@
-print(__doc__)
-
-import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-
+import pandas as pd
 from sklearn import decomposition
-from sklearn import datasets
-import matplotlib.cm as cm
-np.random.seed(5)
+from sklearn.preprocessing import StandardScaler
 
 centers = [[1, 1], [-1, -1], [1, -1]]
-iris = datasets.load_iris()
-X = iris.data
-y = iris.target
+df = pd.read_csv('./iris.csv', names=['sepal length','sepal width','petal length','petal width','target'])
+features = ['sepal length', 'sepal width', 'petal length', 'petal width']
+# Separating out the features
+X = df.loc[:, features].values
+# Separating out the target
+y = df.loc[:,['target']].values
+# Standardizing the features
+X = StandardScaler().fit_transform(X)
 
-fig = plt.figure(1, figsize=(4, 3))
-plt.clf()
+# components=3
+fig = plt.figure(figsize = (8,8))
 ax = Axes3D(fig, rect=[0, 0, .95, 1], elev=48, azim=134)
-
-plt.cla()
 pca = decomposition.PCA(n_components=3)
-pca.fit(X)
-X = pca.transform(X)
-
-for name, label in [('Setosa', 0), ('Versicolour', 1), ('Virginica', 2)]:
-    ax.text3D(X[y == label, 0].mean(),
-              X[y == label, 1].mean() + 1.5,
-              X[y == label, 2].mean(), name,
-              horizontalalignment='center',
-              bbox=dict(alpha=.5, edgecolor='w', facecolor='w'))
-# Reorder the labels to have colors matching the cluster results
-y = np.choose(y, [1, 2, 0]).astype(np.float)
-cmap = cm.get_cmap("jet")
-ax.scatter(X[:, 0], X[:, 1], X[:, 2], c=y, cmap=cmap)
-
-ax.w_xaxis.set_ticklabels([])
-ax.w_yaxis.set_ticklabels([])
-ax.w_zaxis.set_ticklabels([])
-
+PA3 = pca.fit_transform(X)
+principalDf = pd.DataFrame(data = PA3, columns = ['principal component 1', 'principal component 2', 'principal component 3'])
+finalDf = pd.concat([principalDf, df[['target']]], axis = 1)
+targets = ['Setosa', 'Versicolor', 'Virginica']
+colors = ['r', 'g', 'b']
+ax.set_xlabel('Principal Component 1', fontsize = 15)
+ax.set_ylabel('Principal Component 2', fontsize = 15)
+ax.set_zlabel('Principal Component 3', fontsize = 15)
+ax.set_title('3 component PCA', fontsize = 20)
+for target, color in zip(targets,colors):
+    indicesToKeep = finalDf['target'] == target
+    ax.scatter(finalDf.loc[indicesToKeep, 'principal component 1']
+   , finalDf.loc[indicesToKeep, 'principal component 2']
+   , finalDf.loc[indicesToKeep, 'principal component 3']
+   , c = color
+   , s = 50)
+ax.legend(targets)
+ax.grid()
 plt.show()
 
 
+#componets=2
+pca = decomposition.PCA(n_components=2)
+PA2 = pca.fit_transform(X)
+principalDf = pd.DataFrame(data = PA2, columns = ['principal component 1', 'principal component 2'])
+finalDf = pd.concat([principalDf, df[['target']]], axis = 1)
+fig = plt.figure(figsize = (8,8))
+ax = fig.add_subplot(1,1,1)
+ax.set_xlabel('Principal Component 1', fontsize = 15)
+ax.set_ylabel('Principal Component 2', fontsize = 15)
+ax.set_title('2 component PCA', fontsize = 20)
+for target, color in zip(targets,colors):
+  indicesToKeep = finalDf['target'] == target
+  ax.scatter(finalDf.loc[indicesToKeep, 'principal component 1']
+   , finalDf.loc[indicesToKeep, 'principal component 2']
+   , c = color
+   , s = 50)
+ax.legend(targets)
+ax.grid()
+plt.show()
