@@ -3,6 +3,7 @@ from mpl_toolkits.mplot3d import Axes3D
 import pandas as pd
 from sklearn import decomposition
 from sklearn.preprocessing import StandardScaler
+import plotly.graph_objs as go
 
 centers = [[1, 1], [-1, -1], [1, -1]]
 df = pd.read_csv('./iris.csv', names=['sepal length','sepal width','petal length','petal width','target'])
